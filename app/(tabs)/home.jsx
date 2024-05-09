@@ -1,22 +1,34 @@
-import { View, Text, Image } from "react-native";
-import React from "react";
+import { View, Text, Image, Alert } from "react-native";
+import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlatList } from "react-native";
 
 import { images } from "../../constants";
 import SearchInput from "../../components/SearchInput";
 import Trending from "../../components/Trending";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { GestureHandlerRootView, RefreshControl } from "react-native-gesture-handler";
+import EmptyState from "../../components/EmptyState";
+import { getAllPosts } from "../../lib/appwrite";
+import useAppwrite from "../../lib/useAppwrite";
+import VideoCard from "../../components/VideoCard";
 
 const Home = () => {
+  const { data: posts, refetch } = useAppwrite(getAllPosts)
+  const [refreshing, setRefreshing] = useState(true)
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch()
+    setRefreshing(false);
+  }
+  console.log(posts)
   return (
     <GestureHandlerRootView>
-      <SafeAreaView className="bg-primary">
+      <SafeAreaView className="bg-primary h-full">
         <FlatList
-          data={[{ id: 1 }, { id: 2 }]}
-          keyExtractor={(item) => item.$id}
+          data={posts}
+          keyExtractor={(item) => item.$id.toString()}
           renderItem={({ item }) => (
-            <Text className="text-3xl text-white">{item.id}</Text>
+            <VideoCard video={item} />
           )}
           ListHeaderComponent={() => (
             <View className="my-6 px-4 space-y-6">
@@ -46,12 +58,15 @@ const Home = () => {
               </View>
             </View>
           )}
-          ListEmptyComponent={() => {
-            <Text>
-              Upload New Videos
-              <br /> Be a part of Trending
-            </Text>;
-          }}
+          ListEmptyComponent={() => (
+            <EmptyState
+              subtitle="Be the first one to upload video"
+              title="No Videos Found"
+            />
+          )}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         />
       </SafeAreaView>
     </GestureHandlerRootView>
