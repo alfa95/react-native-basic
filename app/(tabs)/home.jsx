@@ -8,19 +8,19 @@ import SearchInput from "../../components/SearchInput";
 import Trending from "../../components/Trending";
 import { GestureHandlerRootView, RefreshControl } from "react-native-gesture-handler";
 import EmptyState from "../../components/EmptyState";
-import { getAllPosts } from "../../lib/appwrite";
+import { getAllPosts, getLatestPosts } from "../../lib/appwrite";
 import useAppwrite from "../../lib/useAppwrite";
 import VideoCard from "../../components/VideoCard";
 
 const Home = () => {
   const { data: posts, refetch } = useAppwrite(getAllPosts)
+  const { data: latestPosts } = useAppwrite(getLatestPosts)
   const [refreshing, setRefreshing] = useState(true)
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch()
     setRefreshing(false);
   }
-  console.log(posts)
   return (
     <GestureHandlerRootView>
       <SafeAreaView className="bg-primary h-full">
@@ -54,7 +54,7 @@ const Home = () => {
                 <Text className="text-gray-100 text-lg font-pregular mb-3">
                   Latest Videos
                 </Text>
-                <Trending posts={[{ id: 3 }, { id: 4 }, { id: 5 }] ?? []} />
+                <Trending posts={latestPosts ?? []} />
               </View>
             </View>
           )}
